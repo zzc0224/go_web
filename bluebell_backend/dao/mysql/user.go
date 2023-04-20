@@ -67,3 +67,10 @@ func GetUserByID(idStr string) (user *models.User, err error) {
 	err = db.Get(user, sqlStr, idStr)
 	return
 }
+
+func GetAllUser() []string {
+	var userId []string
+	sqlStr := `select user_id from user`
+	db.Select(&userId, sqlStr)
+	return userId
+}

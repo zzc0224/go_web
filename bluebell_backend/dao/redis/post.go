@@ -1,17 +1,24 @@
 package redis
 
 import (
+	"bluebell_backend/dao/mysql"
 	"math"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+
+	"go.uber.org/zap"
 
 	"github.com/go-redis/redis"
 )
 
 const (
 	OneWeekInSeconds         = 7 * 24 * 3600
-	VoteScore        float64 = 432
+	VoteScore        float64 = 432 //  86400/200=432
 	PostPerAge               = 20
 )
+
+var db *sqlx.DB
 
 /*
 投票算法：http://www.ruanyifeng.com/blog/2012/03/ranking_algorithm_reddit.html
@@ -61,24 +68,41 @@ func PostVote(postID, userID string, v float64) (err error) {
 		Member: userID,
 	})
 	pipeline.ZIncrBy(KeyPostScoreZSet, VoteScore*diffAbs*v, postID) // 更新分数
-
-	switch math.Abs(ov) - math.Abs(v) {
-	case 1:
-		// 取消投票 ov=1/-1 v=0
-		// 投票数-1
-		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -1)
-	case 0:
-		// 反转投票 ov=-1/1 v=1/-1
-		// 投票数不用更新
+	//switch math.Abs(ov) - math.Abs(v) {
+	//case 1:
+	//	// 取消投票 ov=1/-1 v=0
+	//	// 投票数-1
+	//	pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -1)
+	//case 0:
+	//	// 反转投票 ov=-1/1 v=1/-1
+	//	// 投票数不用更新
+	//case -1:
+	//	// 新增投票 ov=0 v=1/-1
+	//	// 投票数+1
+	//	pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", 1)
+	//default:
+	//	// 已经投过票了
+	//	return ErrorVoted
+	//}
+	switch ov - v {
+	case -2:
+		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", 2)
 	case -1:
-		// 新增投票 ov=0 v=1/-1
-		// 投票数+1
 		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", 1)
-	default:
-		// 已经投过票了
-		return ErrorVoted
+	case 0:
+		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -int64(v))
+		pipeline.ZAddXX(key, redis.Z{ // 将记录中的投票取消
+			Score:  0,
+			Member: userID,
+		})
+		pipeline.ZIncrBy(KeyPostScoreZSet, -VoteScore*v, postID) // 更新分数
+	case 1:
+		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -1)
+	case 2:
+		pipeline.HIncrBy(KeyPostInfoHashPrefix+postID, "votes", -2)
 	}
 	_, err = pipeline.Exec()
+	zap.L().Debug("PostVote", zap.String("postID", postID), zap.String("userID", userID), zap.Float64("direction", v))
 	return
 }
 
@@ -88,13 +112,14 @@ func CreatePost(postID, userID, title, summary, communityName string) (err error
 	votedKey := KeyPostVotedZSetPrefix + postID
 	communityKey := KeyCommunityPostSetPrefix + communityName
 	postInfo := map[string]interface{}{
-		"title":    title,
-		"summary":  summary,
-		"post:id":  postID,
-		"user:id":  userID,
-		"time":     now,
-		"votes":    1,
-		"comments": 0,
+		"title":     title,
+		"summary":   summary,
+		"post:id":   postID,
+		"user:id":   userID,
+		"time":      now,
+		"votes":     1,
+		"comments":  0,
+		"community": communityName,
 	}
 
 	// 事务操作
@@ -119,7 +144,7 @@ func CreatePost(postID, userID, title, summary, communityName string) (err error
 	return
 }
 
-// GetPost 从key中分页取出帖子
+// GetPost 从key中分页取出帖子(一页PostPerAge 20 个帖子)
 func GetPost(order string, page int64) []map[string]string {
 	key := KeyPostScoreZSet
 	if order == "time" {
@@ -137,6 +162,39 @@ func GetPost(order string, page int64) []map[string]string {
 	return postList
 }
 
+func GetVote() map[string]map[string]float64 {
+	recommendMap := make(map[string]map[string]float64)
+	var PostIdList []string
+	postKey := KeyPostVotedZSetPrefix + "*"
+	result, _ := client.Keys(postKey).Result()
+	for _, val := range result {
+		PostIdList = append(PostIdList, val)
+	}
+	userIdList := mysql.GetAllUser()
+	for _, userId := range userIdList {
+		recommendMap[userId] = make(map[string]float64)
+	}
+	for _, s := range PostIdList {
+		for _, userId := range userIdList {
+			recommendMap[userId][s] = 0
+		}
+		//println("vote value")
+	}
+	for _, s := range PostIdList {
+		//println(i, s)
+		strings, _ := client.ZRangeWithScores(s, 0, -1).Result()
+
+		for _, z := range strings {
+			//println(z.Score, z.Member)
+			//fmt.Printf("%v %v\n", z.Score, z.Member)
+			userId := z.Member.(string)
+			recommendMap[userId][s] = z.Score
+		}
+		//println("vote value")
+	}
+	return recommendMap
+}
+
 // GetCommunityPost 分社区根据发帖时间或者分数取出分页的帖子
 func GetCommunityPost(communityName, orderKey string, page int64) []map[string]string {
 	key := orderKey + communityName // 创建缓存键
@@ -144,10 +202,21 @@ func GetCommunityPost(communityName, orderKey string, page int64) []map[string]s
 	if client.Exists(key).Val() < 1 {
 		client.ZInterStore(key, redis.ZStore{
 			Aggregate: "MAX",
-		}, KeyCommunityPostSetPrefix+communityName, orderKey)
+		}, KeyCommunityPostSetPrefix+communityName, KeyPostInfoHashPrefix+orderKey)
 		client.Expire(key, 60*time.Second)
 	}
-	return GetPost(key, page)
+	start := (page - 1) * PostPerAge
+	end := start + PostPerAge - 1
+	ids := client.ZRevRange(key, start, end).Val()
+	postList := make([]map[string]string, 0, len(ids))
+	for _, id := range ids {
+		postData := client.HGetAll(KeyPostInfoHashPrefix + id).Val()
+		postData["id"] = id
+		postList = append(postList, postData)
+	}
+	return postList
+
+	//return GetPost(key, page)
 }
 
 // Reddit Hot rank algorithms

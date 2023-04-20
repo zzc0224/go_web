@@ -56,6 +56,7 @@ CREATE TABLE `comment` (
   `content` text COLLATE utf8mb4_general_ci NOT NULL,
   `post_id` bigint(20) NOT NULL,
   `author_id` bigint(20) NOT NULL,
+  `author_name` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
   `parent_id` bigint(20) NOT NULL DEFAULT '0',
   `status` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

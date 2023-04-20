@@ -85,7 +85,7 @@ export default {
         data: JSON.stringify({
           title: this.title,
           content: this.content,
-          community_id: this.selectCommunity.community_id
+          community_id: this.selectCommunity.id
         })
       })
         .then(response => {

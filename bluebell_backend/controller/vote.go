@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,8 +26,6 @@ func (v *VoteData) UnmarshalJSON(data []byte) (err error) {
 		return
 	} else if len(required.PostID) == 0 {
 		err = errors.New("缺少必填字段post_id")
-	} else if required.Direction == 0 {
-		err = errors.New("缺少必填字段direction")
 	} else {
 		v.PostID = required.PostID
 		v.Direction = required.Direction
@@ -46,6 +46,7 @@ func VoteHandler(c *gin.Context) {
 		return
 	}
 	if err := redis.PostVote(vote.PostID, fmt.Sprint(userID), vote.Direction); err != nil {
+		zap.L().Error("controller.VoteHandler() failed", zap.Error(err))
 		ResponseError(c, CodeServerBusy)
 		return
 	}

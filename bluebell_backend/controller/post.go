@@ -55,8 +55,41 @@ func PostListHandler(c *gin.Context) {
 	ResponseSuccess(c, posts)
 }
 
+func CommunityListHandler(c *gin.Context) {
+	community, _ := c.GetQuery("community")
+	order, _ := c.GetQuery("order")
+	pageStr, ok := c.GetQuery("page")
+	if !ok {
+		pageStr = "1"
+	}
+	pageNum, err := strconv.ParseInt(pageStr, 10, 64)
+	if err != nil {
+		pageNum = 1
+	}
+	posts := redis.GetCommunityPost(community, order, pageNum)
+	fmt.Println(len(posts))
+	ResponseSuccess(c, posts)
+}
+
 func PostList2Handler(c *gin.Context) {
-	data, err := logic.GetPostList2()
+	pageStr := c.Query("page")
+	sizeStr := c.Query("size")
+
+	var (
+		page int64
+		size int64
+		err  error
+	)
+	page, err = strconv.ParseInt(pageStr, 10, 64)
+	if err != nil {
+		page = 1
+	}
+	size, err = strconv.ParseInt(sizeStr, 10, 64)
+	if err != nil {
+		size = 10
+	}
+
+	data, err := logic.GetPostList2(page, size)
 	if err != nil {
 		ResponseError(c, CodeServerBusy)
 		return

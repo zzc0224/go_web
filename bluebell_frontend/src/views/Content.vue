@@ -19,6 +19,31 @@
               <i class="iconfont icon-comment"></i>comment
             </span>
           </div>
+          <br>
+          <div>
+            <li v-for="commentList in comment" :key="commentList.comment_id">
+              <div>{{commentList.author_name}}</div>
+              <div>{{commentList.content}}</div>
+            </li>
+          </div>
+          <div class="post-sub-container">
+            <!---此处放置富文本--->
+            <div class="post-text-con">
+            <textarea
+                class="post-content-t"
+                id
+                cols="30"
+                rows="10"
+                v-model="content"
+                placeholder="内容"
+            ></textarea>
+            </div>
+          </div>
+          <div class="post-footer">
+            <div class="btns">
+              <button class="btn" @click="SubmitComment()">发表</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -47,7 +72,7 @@
         <h5 class="t-header"></h5>
         <div class="t-info">
           <a class="avatar"></a>
-          <span class="topic-name">b/{{post.name}}</span>
+          <span class="topic-name">b/{{post.author_name}}</span>
         </div>
         <p class="t-desc">树洞 树洞 无限树洞的树洞</p>
         <ul class="t-num">
@@ -73,6 +98,8 @@ export default {
   data(){
     return {
       post:{},
+      comment:{},
+      content:""
     }
   },
   methods:{
@@ -93,9 +120,46 @@ export default {
           console.log(error);
         });
     },
+    getComment(){
+      this.$axios({
+        method: "get",
+        url: "/comment/"+ this.$route.params.id,
+      })
+          .then(response => {
+            console.log(1, response.data);
+            if (response.code == 1000) {
+              this.comment = response.data;
+            } else {
+              console.log(response.msg);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+    SubmitComment(){
+      this.$axios({
+        method:"post",
+        url:"/comment/"+this.$route.params.id,
+        data:JSON.stringify({
+          content:this.content
+        })
+      })
+          .then(response => {
+            this.getPostDetail()
+            this.getComment()
+            this.content = ""
+            if (response.code == 1000) {
+              console.log("vote success");
+            } else {
+              console.log(response.msg);
+            }
+          })
+    },
   },
   mounted: function() {
     this.getPostDetail();
+    this.getComment();
   }
 };
 </script>
@@ -340,5 +404,55 @@ export default {
       }
     }
   }
+.post-sub-container {
+  padding: 16px;
+.post-text-con {
+  width: 100%;
+  height: 200px;
+  border: 1px solid #edeff1;
+  margin-top: 20px;
+.post-content-t {
+  resize: none;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  height: 200px;
+  padding: 12px 8px;
+  outline: none;
+  border: 1px solid #edeff1;
+  border-radius: 4px;
+  color: #1c1c1c;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+}
+}
+}
+.post-footer {
+  display: flex;
+  display: -webkit-flex;
+  margin: 0 16px;
+  justify-content: flex-end;
+.btns {
+.btn {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 24px;
+  text-transform: uppercase;
+  padding: 3px 16px;
+  background: #0079d3;
+  color: #ffffff;
+  margin-left: 8px;
+  cursor: pointer;
+}
+}
+}
 }
 </style>

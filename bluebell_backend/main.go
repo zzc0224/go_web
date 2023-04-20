@@ -10,6 +10,17 @@ import (
 	"fmt"
 )
 
+// @title 论坛系统
+// @version 1.0
+// @description 简单的论坛系统
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.url http://swagger.io/supprt
+// @contact.email support@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8081
+// @BasePath /api/v1
 func main() {
 	//var confFile string
 	//flag.StringVar(&confFile, "conf", "./conf/config.yaml", "配置文件")

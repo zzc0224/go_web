@@ -62,8 +62,8 @@ func GetPost(postID string) (post *models.ApiPostDetail, err error) {
 	return post, nil
 }
 
-func GetPostList2() (data []*models.ApiPostDetail, err error) {
-	postList, err := mysql.GetPostList()
+func GetPostList2(page, size int64) (data []*models.ApiPostDetail, err error) {
+	postList, err := mysql.GetPostList(page, size)
 	if err != nil {
 		fmt.Println(err)
 		return

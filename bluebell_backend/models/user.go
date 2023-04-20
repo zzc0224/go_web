@@ -11,6 +11,13 @@ type User struct {
 	Password string `json:"password" db:"password"`
 }
 
+type ApiLoginDetail struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	UserID       uint64 `json:"userID"`
+	UserName     string `json:"userName"`
+}
+
 func (u *User) UnmarshalJSON(data []byte) (err error) {
 	required := struct {
 		UserName string `json:"username" db:"username"`

@@ -15,6 +15,13 @@
         >
           <i class="iconfont icon-top"></i>Score
         </div>
+        <div class="top btn-iconfont"
+             :class="{ active: scoreOrder }"
+             @click="selectOrder('score')"
+        >
+          <i class="iconfont icon-top"></i>ReCommend
+        </div>
+
         <button class="btn-publish" @click="goPublish">发表</button>
       </div>
       <ul class="c-l-list">
@@ -25,7 +32,7 @@
               @click="vote(post.id, '1')"
               ></span>
             </a>
-            <span class="text">{{post.vote_num}}</span>
+            <span class="text">{{post.votes}}</span>
             <a class="vote">
               <span class="iconfont icon-down"
               @click="vote(post.id, '-1')"
@@ -33,9 +40,12 @@
             </a>
           </div>
           <div class="l-container" @click="goDetail(post.id)">
-            <h4 class="con-title">{{post.title}}</h4>
+            <h4 class="con-title left">{{post.title}}</h4>
+            <div>
+              <p>{{post.community}}</p>
+            </div>
             <div class="con-memo">
-              <p>{{post.content}}</p>
+              <p>{{post.summary}}</p>
             </div>
             <!-- <div class="user-btn">
               <span class="btn-item">
@@ -118,7 +128,7 @@ export default {
     return {
       order: "time",
       page: 1,
-      postList: []
+      postList: [],
     };
   },
   methods: {
@@ -135,7 +145,7 @@ export default {
     getPostList() {
       this.$axios({
         method: "get",
-        url: "/post2",
+        url: "/post",
         params: {
           page: this.page,
           order: this.order,
@@ -159,10 +169,11 @@ export default {
         url: "/vote",
         data: JSON.stringify({
           post_id: post_id,
-          direction: direction,
+          direction: parseFloat(direction),
         })
       })
         .then(response => {
+          this.getPostList()
           if (response.code == 1000) {
             console.log("vote success");
           } else {
@@ -172,7 +183,7 @@ export default {
         .catch(error => {
           console.log(error);
         });
-    }
+    },
   },
   mounted: function() {
     this.getPostList();

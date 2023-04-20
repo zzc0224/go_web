@@ -6,10 +6,11 @@ import (
 	"bluebell_backend/pkg/jwt"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func SignUpHandler(c *gin.Context) {
@@ -36,6 +37,15 @@ func SignUpHandler(c *gin.Context) {
 	ResponseSuccess(c, nil)
 }
 
+// LoginHandler 登录接口
+// @Summary 登录接口
+// @Description 用户登录
+// @Tags 用户相关接口
+// @Accept json
+// @Produce json
+// @Param object query models.User false "用户登录"
+// @Success 200 {object} _ResponseLogin
+// @Router /login [post]
 func LoginHandler(c *gin.Context) {
 	var u models.User
 	if err := c.ShouldBindJSON(&u); err != nil {
