@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	OneWeekInSeconds         = 7 * 24 * 3600
+	OneYearInSeconds         = 365 * 7 * 24 * 3600
 	VoteScore        float64 = 432 //  86400/200=432
 	PostPerAge               = 20
 )
@@ -53,7 +53,7 @@ v=-1时，有两种情况
 func PostVote(postID, userID string, v float64) (err error) {
 	// 1. 取帖子发布时间
 	postTime := client.ZScore(KeyPostTimeZSet, postID).Val()
-	if float64(time.Now().Unix())-postTime > OneWeekInSeconds {
+	if float64(time.Now().Unix())-postTime > OneYearInSeconds {
 		// 不允许投票了
 		return ErrorVoteTimeExpire
 	}
@@ -128,7 +128,7 @@ func CreatePost(postID, userID, title, summary, communityName string) (err error
 		Score:  1,
 		Member: userID,
 	})
-	pipeline.Expire(votedKey, time.Second*OneWeekInSeconds) // 一周时间
+	pipeline.Expire(votedKey, time.Second*OneYearInSeconds) // 一年时间
 
 	pipeline.HMSet(KeyPostInfoHashPrefix+postID, postInfo)
 	pipeline.ZAdd(KeyPostScoreZSet, redis.Z{ // 添加到分数的ZSet
@@ -160,6 +160,16 @@ func GetPost(order string, page int64) []map[string]string {
 		postList = append(postList, postData)
 	}
 	return postList
+}
+
+func GetReCommendList(keys []string) []map[string]string {
+	recommendList := make([]map[string]string, 0)
+	for _, key := range keys {
+		recommend := client.HGetAll(KeyPostInfoHashPrefix + key).Val()
+		recommend["id"] = key
+		recommendList = append(recommendList, recommend)
+	}
+	return recommendList
 }
 
 func GetVote() map[string]map[string]float64 {

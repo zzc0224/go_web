@@ -16,8 +16,8 @@
           <i class="iconfont icon-top"></i>Score
         </div>
         <div class="top btn-iconfont"
-             :class="{ active: scoreOrder }"
-             @click="selectOrder('score')"
+             :class="{ active: recommendOrder }"
+             @click="getReCommendList"
         >
           <i class="iconfont icon-top"></i>ReCommend
         </div>
@@ -163,6 +163,23 @@ export default {
           console.log(error);
         });
     },
+    getReCommendList(){
+      this.$axios({
+        method: "get",
+        url: "/recommend",
+      })
+          .then(response => {
+            console.log(response.data, 222);
+            if (response.code == 1000) {
+              this.postList = response.data;
+            } else {
+              console.log(response.msg);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
     vote(post_id, direction){
       this.$axios({
         method: "post",
@@ -194,6 +211,9 @@ export default {
     },
     scoreOrder(){
       return this.order == "score";
+    },
+    recommendOrder(){
+      return this.order == "recommend";
     }
   }
 };
@@ -258,6 +278,7 @@ export default {
       .top {
         font-size: 14px;
       }
+
       .btn-publish {
         width: 64px;
         height: 32px;

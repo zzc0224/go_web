@@ -11,7 +11,7 @@
         <a class="login-btn" @click="goSignUp">注册</a>
       </div>
       <div class="user-box" v-show="isLogin">
-        <span class="user">{{ currUsername }}</span>
+        <span class="user">{{ user.username }}</span>
         <div class="dropdown-content">
           <a @click="goLogout">登出</a>
         </div>
@@ -35,6 +35,11 @@ export default {
       return this.$store.getters.username;
     }
   },
+  data(){
+    return{
+      user:[],
+    };
+  },
   methods: {
     goIndex(){
       this.$router.push({ name: "Home" });
@@ -47,8 +52,28 @@ export default {
     },
     goLogout(){
       this.$store.commit("logout");
+    },
+    getUserName(){
+      this.$axios({
+        method: "get",
+        url: "/CurrUserName",
+      })
+          .then(response => {
+            console.log(response.data, 222);
+            if (response.code == 1000) {
+              this.user = response.data;
+            } else {
+              console.log(response.msg);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
     }
-  }
+  },
+  mounted: function() {
+    this.getUserName();
+  },
 };
 </script>
 

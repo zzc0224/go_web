@@ -1,6 +1,11 @@
 package controller
 
-import "github.com/gin-gonic/gin"
+import (
+	"bluebell_backend/dao/mysql"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
 
 func getCurrentUserID(c *gin.Context) (userID uint64, err error) {
 	_userID, ok := c.Get(ContextUserIDKey)
@@ -14,4 +19,10 @@ func getCurrentUserID(c *gin.Context) (userID uint64, err error) {
 		return
 	}
 	return
+}
+
+func GetCurrUserName(c *gin.Context) {
+	currentUserID, _ := getCurrentUserID(c)
+	user, _ := mysql.GetUserByID(strconv.FormatUint(currentUserID, 10))
+	ResponseSuccess(c, user)
 }
