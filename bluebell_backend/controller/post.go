@@ -1,11 +1,15 @@
 package controller
 
 import (
+	"bluebell_backend/dao/mysql"
 	"bluebell_backend/dao/redis"
 	"bluebell_backend/logic"
 	"bluebell_backend/models"
 	"fmt"
+	"path"
 	"strconv"
+	"strings"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -53,6 +57,30 @@ func PostListHandler(c *gin.Context) {
 	posts := redis.GetPost(order, pageNum)
 	fmt.Println(len(posts))
 	ResponseSuccess(c, posts)
+}
+
+func GetPostListBYUser(c *gin.Context) {
+	id, _ := getCurrentUserID(c)
+	postIDList := mysql.GetPostByUser(id)
+	keys := make([]string, 0)
+	for _, s := range postIDList {
+		keys = append(keys, strconv.FormatUint(s, 10))
+	}
+	postList := redis.GetPostBYKeys(keys)
+	ResponseSuccess(c, postList)
+}
+
+func GetOtherUserPost(c *gin.Context) {
+	id := c.Param("id")
+	atom, _ := strconv.Atoi(id)
+	u := uint64(atom)
+	postIDList := mysql.GetPostByUser(u)
+	keys := make([]string, 0)
+	for _, s := range postIDList {
+		keys = append(keys, strconv.FormatUint(s, 10))
+	}
+	postList := redis.GetPostBYKeys(keys)
+	ResponseSuccess(c, postList)
 }
 
 func CommunityListHandler(c *gin.Context) {
@@ -108,4 +136,40 @@ func PostDetailHandler(c *gin.Context) {
 	}
 
 	ResponseSuccess(c, post)
+}
+
+func UploadImg(c *gin.Context) {
+	f, err := c.FormFile("imgfile")
+	if err != nil {
+		c.JSON(200, gin.H{
+			"code": 400,
+			"msg":  "上传失败!",
+		})
+		return
+	} else {
+
+		fileExt := strings.ToLower(path.Ext(f.Filename))
+		if fileExt != ".png" && fileExt != ".jpg" && fileExt != ".gif" && fileExt != ".jpeg" {
+			c.JSON(200, gin.H{
+				"code": 400,
+				"msg":  "上传失败!只允许png,jpg,gif,jpeg文件",
+			})
+			return
+		}
+		timeStamp := time.Now().Unix()
+		fileName := fmt.Sprintf("%v%s", timeStamp, f.Filename)
+		//fileDir := fmt.Sprintf("%s%s", "./image/", fileName)
+		fileDir := path.Join("./image/", fileName)
+		err := c.SaveUploadedFile(f, fileDir)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+		c.JSON(200, gin.H{
+			"code": 200,
+			"msg":  "上传成功!",
+			"result": gin.H{
+				"path": fileDir,
+			},
+		})
+	}
 }

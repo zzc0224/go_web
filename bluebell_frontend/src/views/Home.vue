@@ -39,7 +39,7 @@
               ></span>
             </a>
           </div>
-          <div class="l-container" @click="goDetail(post.id)">
+          <div class="l-container" @click="goDetail(post.id)" >
             <h4 class="con-title left">{{post.title}}</h4>
             <div>
               <p>{{post.community}}</p>
@@ -142,6 +142,7 @@ export default {
     goDetail(id){
       this.$router.push({ name: "Content", params: { id: id }});
     },
+
     getPostList() {
       this.$axios({
         method: "get",

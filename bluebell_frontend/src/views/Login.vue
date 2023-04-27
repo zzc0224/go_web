@@ -53,7 +53,10 @@ export default {
 			}).catch((error)=>{
 				console.log(error)
 			})
-		}
+      this.$router.go(0);//登陆后需要刷新，否则用户名不变
+
+    }
+
 	}
 };
 </script>

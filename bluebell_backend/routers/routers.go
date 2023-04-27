@@ -45,6 +45,14 @@ func SetupRouter() *gin.Engine {
 
 		v1.GET("/CurrUserName", controller.GetCurrUserName)
 
+		v1.POST("/upLoad", controller.UploadImg)
+
+		v1.POST("/search", controller.Search)
+
+		v1.GET("/Space", controller.GetPostListBYUser) //个人发的帖子
+
+		v1.GET("/OtherUserSpace/:id", controller.GetOtherUserPost)
+
 		v1.GET("/ping", func(c *gin.Context) {
 			c.String(http.StatusOK, "pong test")
 		})
