@@ -42,11 +42,13 @@
             ></textarea>
           </div>
           <el-upload
-              class="upload-demo"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              :on-preview="handlePreview"
+              class="upload"
+              action="http://localhost:8888/api/file/uploadTest"
               :on-remove="handleRemove"
+              :on-success="handleSuccess"
               :file-list="fileList"
+              :multiple="true"
+              :limit="5"
               list-type="picture">
             <el-button size="small" type="primary">点击上传</el-button>
             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
@@ -55,6 +57,9 @@
         <div class="post-footer">
           <div class="btns">
             <button class="btn" @click="submit()">发表</button>
+          </div>
+          <div class="btns">
+            <button class="backBtn" @click="toHome()">返回</button>
           </div>
         </div>
       </div>
@@ -75,6 +80,8 @@
 </template>
 
 <script>
+import router from "@/router/index.js"
+
 export default {
   name: "Publish",
   data() {
@@ -84,10 +91,14 @@ export default {
       showCommunityList: false,
       selectCommunity: {},
       communityList: [],
-      fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
-    };
+      fileList: [],
+    }
   },
+
   methods: {
+    toHome() {
+      router.go(-1)
+    },
     submit() {
       this.$axios({
         method: "post",
@@ -95,7 +106,8 @@ export default {
         data: JSON.stringify({
           title: this.title,
           content: this.content,
-          community_id: this.selectCommunity.id
+          community_id: this.selectCommunity.id,
+          fileList: JSON.stringify(this.fileList)
         })
       })
         .then(response => {
@@ -132,9 +144,13 @@ export default {
     },
     handleRemove(file, fileList) {
       console.log(file, fileList);
+      console.log("当前文件列表：", this.fileList)
     },
-    handlePreview(file) {
-      console.log(file);
+    handleSuccess(response, file, fileList) {
+      this.fileList.push({
+        name: file.name,
+        url: response.data
+      })
     },
     selected(index) {
       this.selectCommunity = this.communityList[index];
@@ -335,6 +351,9 @@ export default {
             line-height: 21px;
           }
         }
+        .upload {
+          margin-top: 10px;
+        }
       }
       .post-footer {
         display: flex;
@@ -368,6 +387,23 @@ export default {
             text-transform: uppercase;
             padding: 3px 16px;
             background: #0079d3;
+            color: #ffffff;
+            margin-left: 8px;
+            cursor: pointer;
+          }
+          .backBtn {
+            border: 1px solid transparent;
+            border-radius: 4px;
+            box-sizing: border-box;
+            text-align: center;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            line-height: 24px;
+            text-transform: uppercase;
+            padding: 3px 16px;
+            background: #848c96;
             color: #ffffff;
             margin-left: 8px;
             cursor: pointer;
