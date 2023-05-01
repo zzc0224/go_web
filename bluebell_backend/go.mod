@@ -7,6 +7,7 @@ require (
 	github.com/bytedance/sonic v1.8.5 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fsnotify/fsnotify v1.6.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-openapi/jsonreference v0.20.2 // indirect

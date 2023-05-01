@@ -43,7 +43,7 @@
           </div>
           <el-upload
               class="upload"
-              action="http://localhost:8888/api/file/uploadTest"
+              action="http://localhost:8081/api/v1/upLoad"
               :on-remove="handleRemove"
               :on-success="handleSuccess"
               :file-list="fileList"

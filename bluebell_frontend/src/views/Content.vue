@@ -71,7 +71,7 @@
       <div class="topic-info">
         <h5 class="t-header"></h5>
         <div class="t-info">
-          <a class="avatar" @click="goUserDetail(post.author_id)"></a>
+          <a class="avatar"></a>
           <span class="topic-name">b/{{post.author_name}}</span>
         </div>
         <p class="t-desc">树洞 树洞 无限树洞的树洞</p>
@@ -103,9 +103,6 @@ export default {
     }
   },
   methods:{
-    goUserDetail(author_id){
-      this.$router.push({ name: "OtherUser", params: { author_id: author_id }})
-    },
     getPostDetail() {
       this.$axios({
         method: "get",
@@ -159,7 +156,6 @@ export default {
             }
           })
     },
-
   },
   mounted: function() {
     this.getPostDetail();

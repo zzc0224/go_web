@@ -4,12 +4,7 @@
     <div class="search">
       <label class="s-logo"></label>
       <input type="text" class="s-input" placeholder="搜索" />
-<!--      <input type="text" class="form-control" v-model="order" name="order" id="order" placeholder="搜索" />-->
-<!--      <div class="form-btn">-->
-<!--        <button type="button" class="btn btn-info" @click="Search">搜索</button>-->
-<!--      </div>-->
     </div>
-
     <div class="btns">
       <div v-show="!isLogin">
         <a class="login-btn" @click="goLogin">登录</a>
@@ -43,7 +38,6 @@ export default {
   data(){
     return{
       user:[],
-      order:""
     };
   },
   methods: {
@@ -75,28 +69,7 @@ export default {
           .catch(error => {
             console.log(error);
           });
-
-    },
-    // Search(){
-    //   this.$axios({
-    //     method: 'post',
-    //     url:'/search',
-    //     data: JSON.stringify({
-    //       order: this.order
-    //     })
-    //   }).then((res)=>{
-    //     console.log(res.data)
-    //     if (res.code == 1000) {
-    //       localStorage.setItem("loginResult", JSON.stringify(res.data));
-    //       this.$store.commit("login", res.data);
-    //       this.$router.push({path: this.redirect || '/' })
-    //     } else {
-    //       console.log(res.msg)
-    //     }
-    //   }).catch((error)=>{
-    //     console.log(error)
-    //   })
-    // }
+    }
   },
   mounted: function() {
     this.getUserName();

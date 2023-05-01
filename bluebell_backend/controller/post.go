@@ -139,16 +139,16 @@ func PostDetailHandler(c *gin.Context) {
 }
 
 func UploadImg(c *gin.Context) {
-	f, err := c.FormFile("imgfile")
+	form, err := c.MultipartForm()
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code": 400,
 			"msg":  "上传失败!",
 		})
-		return
-	} else {
-
-		fileExt := strings.ToLower(path.Ext(f.Filename))
+	}
+	files := form.File["file"]
+	for _, file := range files {
+		fileExt := strings.ToLower(path.Ext(file.Filename))
 		if fileExt != ".png" && fileExt != ".jpg" && fileExt != ".gif" && fileExt != ".jpeg" {
 			c.JSON(200, gin.H{
 				"code": 400,
@@ -157,10 +157,10 @@ func UploadImg(c *gin.Context) {
 			return
 		}
 		timeStamp := time.Now().Unix()
-		fileName := fmt.Sprintf("%v%s", timeStamp, f.Filename)
+		fileName := fmt.Sprintf("%v%s", timeStamp, file.Filename)
 		//fileDir := fmt.Sprintf("%s%s", "./image/", fileName)
 		fileDir := path.Join("./image/", fileName)
-		err := c.SaveUploadedFile(f, fileDir)
+		err := c.SaveUploadedFile(file, fileDir)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}
