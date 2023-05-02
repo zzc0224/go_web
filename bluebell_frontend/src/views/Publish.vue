@@ -43,8 +43,9 @@
           </div>
           <el-upload
               class="upload"
-              action="http://localhost:8888/api/file/uploadTest"
+              action="upload"
               :on-remove="handleRemove"
+              :http-request="handleUpload"
               :on-success="handleSuccess"
               :file-list="fileList"
               :multiple="true"
@@ -81,6 +82,7 @@
 
 <script>
 import router from "@/router/index.js"
+import axios from "axios"
 
 export default {
   name: "Publish",
@@ -145,6 +147,23 @@ export default {
     handleRemove(file, fileList) {
       console.log(file, fileList);
       console.log("当前文件列表：", this.fileList)
+    },
+    handleUpload(params) {
+      let formData = new FormData()
+      formData.append('file', params.file)
+      this.$axios({
+        method: "POST",
+        url: "/upload",
+        data: formData
+      }).then(res => {
+        if (res.code === 200) {
+          this.fileList.push({
+            name: params.file.name,
+            url: res.result.path
+          })
+          console.log("上传完成后的的fileList:", this.fileList)
+        }
+      })
     },
     handleSuccess(response, file, fileList) {
       this.fileList.push({
