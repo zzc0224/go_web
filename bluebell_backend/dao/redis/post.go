@@ -157,16 +157,18 @@ func GetPost(order string, page int64) []map[string]string {
 	for _, id := range ids {
 		postData := client.HGetAll(KeyPostInfoHashPrefix + id).Val()
 		postData["id"] = id
+		//authorId := client.HMGet(KeyPostInfoHashPrefix+id, "user:id")
 		postList = append(postList, postData)
 	}
 	return postList
 }
 
-func GetReCommendList(keys []string) []map[string]string {
+func GetPostBYKeys(keys []string) []map[string]string {
 	recommendList := make([]map[string]string, 0)
 	for _, key := range keys {
 		recommend := client.HGetAll(KeyPostInfoHashPrefix + key).Val()
 		recommend["id"] = key
+		//authorId := client.HMGet(KeyPostInfoHashPrefix+key, "user:id")
 		recommendList = append(recommendList, recommend)
 	}
 	return recommendList

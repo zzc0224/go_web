@@ -118,6 +118,6 @@ func ReCommend(c *gin.Context) {
 		split := strings.Split(listStruct.postKey, ":")
 		reCommendKeyList = append(reCommendKeyList, split[3])
 	}
-	reCommendList := redis.GetReCommendList(reCommendKeyList)
+	reCommendList := redis.GetPostBYKeys(reCommendKeyList)
 	ResponseSuccess(c, reCommendList)
 }

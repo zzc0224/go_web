@@ -68,3 +68,18 @@ func GetPostList(page, size int64) (posts []*models.ApiPostDetail, err error) {
 	return
 
 }
+
+func GetPostBYOrder(order string) (postIDList []uint64) {
+	orderStr := "%" + order + "%"
+	sqlStr := `select post_id from post where content like ? or title like ?`
+	postIDList = make([]uint64, 0)
+	db.Select(&postIDList, sqlStr, orderStr, orderStr)
+	return
+}
+
+func GetPostByUser(userid uint64) (postIDList []uint64) {
+	sqlStr := `select post_id from post where author_id = ?`
+	postIDList = make([]uint64, 0)
+	db.Select(&postIDList, sqlStr, userid)
+	return
+}

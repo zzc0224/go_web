@@ -10,7 +10,7 @@ type Post struct {
 	PostID      uint64    `json:"post_id,string" db:"post_id"`
 	Title       string    `json:"title" db:"title" binding:"required"`
 	Content     string    `json:"content" db:"content" binding:"required"`
-	AuthorId    uint64    `json:"author_id" db:"author_id"`
+	AuthorId    uint64    `json:"author_id,string" db:"author_id"`
 	CommunityID int64     `json:"community_id" db:"community_id" binding:"required"`
 	Status      int32     `json:"status" db:"status"`
 	CreateTime  time.Time `json:"-" db:"create_time"`
