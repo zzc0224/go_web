@@ -3,13 +3,14 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from './service/api'
-import {Upload} from "element-ui"
-import {Button} from "element-ui"
+import {Upload, Button, Pagination, Avatar} from "element-ui"
 
 Vue.prototype.$axios = axios;
 Vue.config.productionTip = false
 Vue.use(Upload)
 Vue.use(Button)
+Vue.use(Pagination)
+Vue.use(Avatar)
 
 router.beforeEach((to, from, next) => {
   console.log(to);

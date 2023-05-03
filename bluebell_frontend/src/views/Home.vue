@@ -15,7 +15,7 @@
         >
           <i class="iconfont icon-top"></i>Score
         </div>
-        <div class="top btn-iconfont"
+        <div class="recommend btn-iconfont"
              :class="{ active: recommendOrder }"
              @click="getReCommendList"
         >
@@ -40,12 +40,17 @@
             </a>
           </div>
           <div class="l-container" @click="goDetail(post.id)">
-            <h4 class="con-title left">{{post.title}}</h4>
-            <div>
-              <p>{{post.community}}</p>
-            </div>
-            <div class="con-memo">
-              <p>{{post.summary}}</p>
+              <div class="leftBox">
+                <h4 class="con-title left">{{post.title}}</h4>
+                <div>
+                  <p>{{post.community}}</p>
+                </div>
+                <div class="con-memo">
+                  <p>{{post.summary}}</p>
+                </div>
+              </div>
+            <div class="rightBox">
+              <el-avatar shape="square" class="img" :size="100" fit="scale-down" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar>
             </div>
             <!-- <div class="user-btn">
               <span class="btn-item">
@@ -56,6 +61,17 @@
           </div>
         </li>
       </ul>
+      <div class="pagination">
+        <el-pagination
+            background
+            layout="prev, pager, next"
+            :total="1000"
+            @prev-click="prevClick"
+            @next-click="nextClick"
+            :current-page="this.page"
+            @current-change="currentChange">
+        </el-pagination>
+      </div>
     </div>
     <div class="right">
       <div class="communities">
@@ -132,6 +148,18 @@ export default {
     };
   },
   methods: {
+    currentChange(currentPage) {
+      this.page = currentPage
+      this.getPostList()
+    },
+    prevClick() {
+      this.page--
+      this.getPostList()
+    },
+    nextClick() {
+      this.page++
+      this.getPostList()
+    },
     selectOrder(order){
       this.order = order;
       this.getPostList()
@@ -163,7 +191,8 @@ export default {
           console.log(error);
         });
     },
-    getReCommendList(){
+    getReCommendList() {
+      this.order = "recommend"
       this.$axios({
         method: "get",
         url: "/recommend",
@@ -277,6 +306,7 @@ export default {
       }
       .top {
         font-size: 14px;
+        margin-right: 20px;
       }
 
       .btn-publish {
@@ -353,6 +383,20 @@ export default {
         }
         .l-container {
           padding: 15px;
+          display: flex;
+          .leftBox {
+            flex: 1;
+            max-width: 300px;
+          }
+          .rightBox {
+            flex: 5;
+            display: flex;
+            justify-content: right;
+            .img {
+              width: 88px;
+              height: 88px;
+            }
+          }
           .con-title {
             color: #000000;
             font-size: 18px;
@@ -389,6 +433,9 @@ export default {
           }
         }
       }
+    }
+    .pagination {
+      text-align: center;
     }
   }
   .right {
