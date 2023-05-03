@@ -6,6 +6,7 @@ import (
 	"bluebell_backend/models"
 	"bluebell_backend/pkg/snowflake"
 	"fmt"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -19,6 +20,7 @@ func CreatePost(post *models.Post) (err error) {
 	}
 	post.PostID = postID
 	// 创建帖子
+	//fmt.Printf("%v\n", post.CreateTime)
 	if err := mysql.CreatePost(post); err != nil {
 		zap.L().Error("mysql.CreatePost(&post) failed", zap.Error(err))
 		return err
@@ -28,12 +30,15 @@ func CreatePost(post *models.Post) (err error) {
 		zap.L().Error("mysql.GetCommunityNameByID failed", zap.Error(err))
 		return err
 	}
+	fmt.Printf("%v\n", time.Now())
 	if err := redis.CreatePost(
 		fmt.Sprint(post.PostID),
 		fmt.Sprint(post.AuthorId),
 		post.Title,
 		TruncateByWords(post.Content, 120),
-		community.Name); err != nil {
+		community.Name,
+		post.FileList,
+		time.Now()); err != nil {
 		zap.L().Error("redis.CreatePost failed", zap.Error(err))
 		return err
 	}

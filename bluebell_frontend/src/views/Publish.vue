@@ -44,6 +44,7 @@
           <el-upload
               class="upload"
               action="http://localhost:8081/api/v1/upLoad"
+              :on-preview="handlePreview"
               :on-remove="handleRemove"
               :http-request="handleUpload"
               :on-success="handleSuccess"
@@ -145,6 +146,7 @@ export default {
       this.showCommunityList = !this.showCommunityList;
     },
     handleRemove(file, fileList) {
+      console.log("remove");
       console.log(file, fileList);
       console.log("当前文件列表：", this.fileList)
     },
@@ -153,7 +155,7 @@ export default {
       formData.append('file', params.file)
       this.$axios({
         method: "POST",
-        url: "/upload",
+        url: "/upLoad",
         data: formData
       }).then(res => {
         if (res.code === 200) {
@@ -165,10 +167,17 @@ export default {
         }
       })
     },
+    handlePreview(file){
+      console.log("preview")
+      console.log(file);
+    },
     handleSuccess(response, file, fileList) {
+      console.log("Success");
+      console.log("response",response,"file",file,"fileList",fileList)
+      response = JSON.parse(response)
       this.fileList.push({
         name: file.name,
-        url: response.data
+        url: response.result.path
       })
     },
     selected(index) {

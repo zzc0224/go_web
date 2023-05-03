@@ -65,7 +65,7 @@
         <el-pagination
             background
             layout="prev, pager, next"
-            :total="1000"
+            :total="this.sum"
             @prev-click="prevClick"
             @next-click="nextClick"
             :current-page="this.page"
@@ -145,6 +145,7 @@ export default {
       order: "time",
       page: 1,
       postList: [],
+      sum: 10,
     };
   },
   methods: {
@@ -182,7 +183,9 @@ export default {
         .then(response => {
           console.log(response.data, 222);
           if (response.code == 1000) {
-            this.postList = response.data;
+            this.postList = response.data.postList;
+            this.sum = response.data.sum/4*10
+            console.log(this.sum)
           } else {
             console.log(response.msg);
           }

@@ -13,7 +13,11 @@
         </div>
         <div class="l-container">
           <h4 class="con-title">{{post.title}}</h4>
+          <div>{{post.community_name}}</div>
           <div class="con-info">{{post.content}}</div>
+          <li v-for="file in fileList" :key="file.uid">
+            <div>{{file.url}}</div>
+          </li>
           <div class="user-btn">
             <span class="btn-item">
               <i class="iconfont icon-comment"></i>comment
@@ -24,6 +28,7 @@
             <li v-for="commentList in comment" :key="commentList.comment_id">
               <div>{{commentList.author_name}}</div>
               <div>{{commentList.content}}</div>
+
             </li>
           </div>
           <div class="post-sub-container">
@@ -99,7 +104,8 @@ export default {
     return {
       post:{},
       comment:{},
-      content:""
+      content:"",
+      fileList:{}
     }
   },
   methods:{
@@ -112,6 +118,8 @@ export default {
           console.log(1, response.data);
           if (response.code == 1000) {
             this.post = response.data;
+            this.fileList = JSON.parse(this.post.fileList)
+            console.log(this.fileList)
           } else {
             console.log(response.msg);
           }
@@ -129,6 +137,7 @@ export default {
             console.log(1, response.data);
             if (response.code == 1000) {
               this.comment = response.data;
+
             } else {
               console.log(response.msg);
             }

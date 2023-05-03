@@ -42,6 +42,7 @@ CREATE TABLE `post` (
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '帖子状态',
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `images` varchar(4096) COLLATE utf8mb4_general_ci COMMENT '图片',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_post_id` (`post_id`),
   KEY `idx_author_id` (`author_id`),

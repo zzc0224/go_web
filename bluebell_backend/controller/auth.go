@@ -23,6 +23,11 @@ func JWTAuthMiddleware() func(c *gin.Context) {
 		// 客户端携带Token有三种方式 1.放在请求头 2.放在请求体 3.放在URI
 		// 这里假设Token放在Header的Authorization中，并使用Bearer开头
 		// 这里的具体实现方式要依据你的实际业务情况决定
+		println(c.Request.URL)
+		fmt.Printf("%v\n", c.Request.URL)
+		if c.Request.URL.String() == "/api/v1/upLoad" {
+			c.Next()
+		}
 		authHeader := c.Request.Header.Get("Authorization")
 		if authHeader == "" {
 			ResponseErrorWithMsg(c, CodeInvalidToken, "请求头缺少Auth Token")

@@ -7,6 +7,7 @@ import (
 )
 
 type Post struct {
+	FileList    string    `json:"fileList" db:"images"`
 	PostID      uint64    `json:"post_id,string" db:"post_id"`
 	Title       string    `json:"title" db:"title" binding:"required"`
 	Content     string    `json:"content" db:"content" binding:"required"`
@@ -21,6 +22,7 @@ func (p *Post) UnmarshalJSON(data []byte) (err error) {
 		Title       string `json:"title" db:"title"`
 		Content     string `json:"content" db:"content"`
 		CommunityID int64  `json:"community_id" db:"community_id"`
+		FileList    string `json:"fileList" db:"images"`
 	}{}
 	err = json.Unmarshal(data, &required)
 	if err != nil {
@@ -35,6 +37,7 @@ func (p *Post) UnmarshalJSON(data []byte) (err error) {
 		p.Title = required.Title
 		p.Content = required.Content
 		p.CommunityID = required.CommunityID
+		p.FileList = required.FileList
 	}
 	return
 }
