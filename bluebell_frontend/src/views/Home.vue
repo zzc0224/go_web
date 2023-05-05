@@ -50,7 +50,7 @@
                 </div>
               </div>
             <div class="rightBox">
-              <el-avatar shape="square" class="img" :size="100" fit="scale-down" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar>
+              <el-avatar v-if="post.fileList.length > 0" shape="square" class="img" :size="100" fit="scale-down" :src="post.fileList[0]['url']"></el-avatar>
             </div>
             <!-- <div class="user-btn">
               <span class="btn-item">
@@ -182,7 +182,9 @@ export default {
         .then(response => {
           console.log(response.data, 222);
           if (response.code == 1000) {
-            this.postList = response.data;
+            this.postList = response.data.postList;
+            this.postList.forEach(item => item.fileList = JSON.parse(item.fileList))
+            console.log(this.postList)
           } else {
             console.log(response.msg);
           }
@@ -200,7 +202,7 @@ export default {
           .then(response => {
             console.log(response.data, 222);
             if (response.code == 1000) {
-              this.postList = response.data;
+              this.postList = response.data.postList;
             } else {
               console.log(response.msg);
             }
