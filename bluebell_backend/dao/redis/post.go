@@ -2,8 +2,11 @@ package redis
 
 import (
 	"bluebell_backend/dao/mysql"
+	"bluebell_backend/pkg"
 	"math"
 	"time"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/jmoiron/sqlx"
 
@@ -152,16 +155,34 @@ type PostStruct struct {
 }
 
 // GetPost 从key中分页取出帖子(一页PostPerAge 4 个帖子)
-func GetPost(order string, page int64) PostStruct {
+func GetPost(order string, page int64, c *gin.Context) PostStruct {
 	var PostDataList PostStruct
-	key := KeyPostScoreZSet
-	if order == "time" {
-		key = KeyPostTimeZSet
-	}
+	var key string
+	ids := make([]string, 0)
 	start := (page - 1) * PostPerAge
 	end := start + PostPerAge - 1
-	ids := client.ZRevRange(key, start, end).Val()
-	postList := make([]map[string]string, 0, len(ids))
+	postList := make([]map[string]string, 0)
+	if order == "score" {
+		key = KeyPostScoreZSet
+		ids = client.ZRevRange(key, start, end).Val()
+		PostDataList.Sum = client.ZCard(KeyPostScoreZSet).Val()
+	} else if order == "time" {
+		key = KeyPostTimeZSet
+		ids = client.ZRevRange(key, start, end).Val()
+		PostDataList.Sum = client.ZCard(KeyPostScoreZSet).Val()
+	} else if order == "recommend" {
+		recommendMap := GetVote()
+		reCommendKeyList := pkg.ReCommend(c, recommendMap)
+		PostDataList.Sum = int64(len(reCommendKeyList))
+		println("start:", start, "   end:", end)
+		for i := start; i <= end; i++ {
+			if i < PostDataList.Sum {
+				ids = append(ids, reCommendKeyList[i])
+			} else {
+				break
+			}
+		}
+	}
 	for _, id := range ids {
 		postData := client.HGetAll(KeyPostInfoHashPrefix + id).Val()
 		postData["id"] = id
@@ -169,7 +190,7 @@ func GetPost(order string, page int64) PostStruct {
 		postList = append(postList, postData)
 	}
 	PostDataList.PostList = postList
-	PostDataList.Sum = client.ZCard(KeyPostScoreZSet).Val()
+
 	//m := make(map[string]string)
 	//m["sum"] = strconv.FormatInt(client.ZCard(KeyPostScoreZSet).Val(), 10)
 	return PostDataList

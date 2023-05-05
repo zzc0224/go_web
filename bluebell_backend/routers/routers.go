@@ -29,10 +29,11 @@ func SetupRouter() *gin.Engine {
 	v1.POST("/signup", controller.SignUpHandler)
 	v1.GET("/refresh_token", controller.RefreshTokenHandler)
 	v1.GET("/post/:id", controller.PostDetailHandler)
-	v1.GET("/post", controller.PostListHandler)   //redis
+
 	v1.GET("/post2", controller.PostList2Handler) //mysql
 	v1.Use(controller.JWTAuthMiddleware())
 	{
+		v1.GET("/post", controller.PostListHandler) //redis
 		v1.GET("/community", controller.CommunityHandler)
 		v1.GET("/community/:id", controller.CommunityDetailHandler)
 
@@ -45,7 +46,7 @@ func SetupRouter() *gin.Engine {
 		v1.POST("/comment/:id", controller.CommentHandler)
 		v1.GET("/comment/:id", controller.CommentListHandler)
 
-		v1.GET("/recommend", controller.ReCommend)
+		//v1.GET("/recommend", controller.ReCommend)
 
 		v1.GET("/CurrUserName", controller.GetCurrUserName)
 

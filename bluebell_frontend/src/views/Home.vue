@@ -17,7 +17,7 @@
         </div>
         <div class="recommend btn-iconfont"
              :class="{ active: recommendOrder }"
-             @click="getReCommendList"
+             @click="selectOrder('recommend')"
         >
           <i class="iconfont icon-top"></i>ReCommend
         </div>
@@ -66,6 +66,7 @@
             background
             layout="prev, pager, next"
             :total="this.sum"
+            :page-size="4"
             @prev-click="prevClick"
             @next-click="nextClick"
             :current-page="this.page"
@@ -145,7 +146,7 @@ export default {
       order: "time",
       page: 1,
       postList: [],
-      sum: 10,
+      sum: 0,
     };
   },
   methods: {
@@ -185,6 +186,7 @@ export default {
           if (response.code == 1000) {
             this.postList = response.data.postList;
             this.postList.forEach(item => item.fileList = JSON.parse(item.fileList))
+            this.sum = response.data.sum
             console.log(this.postList)
           } else {
             console.log(response.msg);

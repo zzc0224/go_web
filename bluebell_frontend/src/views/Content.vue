@@ -17,6 +17,7 @@
           <div class="con-info">{{post.content}}</div>
           <li v-for="file in fileList" :key="file.uid">
             <div>{{file.url}}</div>
+            <img :src="file.url">
           </li>
           <div class="user-btn">
             <span class="btn-item">

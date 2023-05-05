@@ -1,7 +1,6 @@
-package controller
+package pkg
 
 import (
-	"bluebell_backend/dao/redis"
 	"math"
 	"sort"
 	"strconv"
@@ -10,9 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ReCommend(c *gin.Context) []map[string]string {
-	recommendMap := redis.GetVote()
-	UserID, _ := GetCurrentUserID(c)
+const (
+	ContextUserIDKey = "userID"
+)
+
+func ReCommend(c *gin.Context, recommendMap map[string]map[string]float64) []string {
+	//recommendMap := redis.GetVote()
+	_userID, _ := c.Get(ContextUserIDKey)
+	UserID, _ := _userID.(uint64)
 	CurrentUserID := strconv.FormatUint(UserID, 10)
 	CurrentVoteMap := make(map[string]float64)
 
@@ -118,7 +122,8 @@ func ReCommend(c *gin.Context) []map[string]string {
 		split := strings.Split(listStruct.postKey, ":")
 		reCommendKeyList = append(reCommendKeyList, split[3])
 	}
-	reCommendList := redis.GetPostBYKeys(reCommendKeyList)
+	return reCommendKeyList
+	//reCommendList := redis.GetPostBYKeys(reCommendKeyList)
 	//ResponseSuccess(c, reCommendList)
-	return reCommendList
+	//return reCommendList
 }

@@ -30,7 +30,7 @@ func CommentHandler(c *gin.Context) {
 		return
 	}
 	// 获取作者ID，当前请求的UserID
-	userID, err := getCurrentUserID(c)
+	userID, err := GetCurrentUserID(c)
 	if err != nil {
 		zap.L().Error("GetCurrentUserID() failed", zap.Error(err))
 		ResponseError(c, CodeNotLogin)

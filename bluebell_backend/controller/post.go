@@ -25,7 +25,7 @@ func CreatePostHandler(c *gin.Context) {
 	}
 	// 参数校验
 	// 获取作者ID，当前请求的UserID
-	userID, err := getCurrentUserID(c)
+	userID, err := GetCurrentUserID(c)
 	if err != nil {
 		zap.L().Error("GetCurrentUserID() failed", zap.Error(err))
 		ResponseError(c, CodeNotLogin)
@@ -52,13 +52,13 @@ func PostListHandler(c *gin.Context) {
 	if err != nil {
 		pageNum = 1
 	}
-	posts := redis.GetPost(order, pageNum)
+	posts := redis.GetPost(order, pageNum, c)
 	//fmt.Println(len(posts))
 	ResponseSuccess(c, posts)
 }
 
 func GetPostListBYUser(c *gin.Context) {
-	id, _ := getCurrentUserID(c)
+	id, _ := GetCurrentUserID(c)
 	postIDList := mysql.GetPostByUser(id)
 	keys := make([]string, 0)
 	for _, s := range postIDList {

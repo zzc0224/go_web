@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getCurrentUserID(c *gin.Context) (userID uint64, err error) {
+func GetCurrentUserID(c *gin.Context) (userID uint64, err error) {
 	_userID, ok := c.Get(ContextUserIDKey)
 	if !ok {
 		err = ErrorUserNotLogin
@@ -22,7 +22,7 @@ func getCurrentUserID(c *gin.Context) (userID uint64, err error) {
 }
 
 func GetCurrUserName(c *gin.Context) {
-	currentUserID, _ := getCurrentUserID(c)
+	currentUserID, _ := GetCurrentUserID(c)
 	user, _ := mysql.GetUserByID(strconv.FormatUint(currentUserID, 10))
 	ResponseSuccess(c, user)
 }
