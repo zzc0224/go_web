@@ -23,13 +23,15 @@ func SetupRouter() *gin.Engine {
 	//r.Use(logger.GinLogger(), logger.GinRecovery(true))
 	r := gin.Default()
 	r.GET("/swagger/*any", gs.WrapHandler(swaggerFiles.Handler))
+	r.Use(cors.Default())
 	v1 := r.Group("/api/v1")
 	v1.POST("/login", controller.LoginHandler)
 	v1.POST("/signup", controller.SignUpHandler)
 	v1.GET("/refresh_token", controller.RefreshTokenHandler)
 	v1.GET("/post/:id", controller.PostDetailHandler)
-	v1.GET("/post", controller.PostListHandler) //redis
-	v1.Use(controller.JWTAuthMiddleware(), Cors3())
+	v1.GET("/post", controller.PostListHandler)   //redis
+	v1.GET("/post2", controller.PostList2Handler) //mysql
+	v1.Use(controller.JWTAuthMiddleware())
 	{
 		v1.GET("/community", controller.CommunityHandler)
 		v1.GET("/community/:id", controller.CommunityDetailHandler)
@@ -37,8 +39,6 @@ func SetupRouter() *gin.Engine {
 		v1.POST("/post", controller.CreatePostHandler)
 
 		v1.GET("/communityList", controller.CommunityListHandler) //根据社区查找帖子
-
-		v1.GET("/post2", controller.PostList2Handler) //mysql
 
 		v1.POST("/vote", controller.VoteHandler)
 
@@ -88,6 +88,7 @@ func Cors3() gin.HandlerFunc {
 }
 
 func Cors() gin.HandlerFunc {
+	println("1111test")
 	return func(c *gin.Context) {
 		method := c.Request.Method               //请求方法
 		origin := c.Request.Header.Get("Origin") //请求头部
@@ -120,5 +121,21 @@ func Cors() gin.HandlerFunc {
 		}
 		// 处理请求
 		c.Next() //  处理请求
+	}
+}
+
+func Cors2() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		method := c.Request.Method
+
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+		c.Next()
 	}
 }

@@ -24,7 +24,6 @@ func CreatePostHandler(c *gin.Context) {
 		return
 	}
 	// 参数校验
-
 	// 获取作者ID，当前请求的UserID
 	userID, err := getCurrentUserID(c)
 	if err != nil {
@@ -33,7 +32,6 @@ func CreatePostHandler(c *gin.Context) {
 		return
 	}
 	post.AuthorId = userID
-
 	err = logic.CreatePost(&post)
 	if err != nil {
 		zap.L().Error("logic.CreatePost failed", zap.Error(err))
@@ -55,7 +53,7 @@ func PostListHandler(c *gin.Context) {
 		pageNum = 1
 	}
 	posts := redis.GetPost(order, pageNum)
-	fmt.Println(len(posts))
+	//fmt.Println(len(posts))
 	ResponseSuccess(c, posts)
 }
 
@@ -168,7 +166,7 @@ func UploadImg(c *gin.Context) {
 			"code": 200,
 			"msg":  "上传成功!",
 			"result": gin.H{
-				"path": fileDir,
+				"path": "http://" + c.Request.Host + "/" + fileDir,
 			},
 		})
 	}

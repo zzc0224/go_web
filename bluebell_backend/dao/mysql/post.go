@@ -12,10 +12,10 @@ import (
 // CreatePost 创建帖子
 func CreatePost(post *models.Post) (err error) {
 	sqlStr := `insert into post(
-	post_id, title, content, author_id, community_id)
-	values(?,?,?,?,?)`
+	post_id, title, content, author_id, community_id,images)
+	values(?,?,?,?,?,?)`
 	_, err = db.Exec(sqlStr, post.PostID, post.Title,
-		post.Content, post.AuthorId, post.CommunityID)
+		post.Content, post.AuthorId, post.CommunityID, post.FileList)
 	if err != nil {
 		zap.L().Error("insert post failed", zap.Error(err))
 		err = ErrorInsertFailed
@@ -27,7 +27,7 @@ func CreatePost(post *models.Post) (err error) {
 // GetPostByID
 func GetPostByID(idStr string) (post *models.ApiPostDetail, err error) {
 	post = new(models.ApiPostDetail)
-	sqlStr := `select post_id, title, content, author_id, community_id, create_time
+	sqlStr := `select post_id, title, content, author_id, community_id, create_time,images
 	from post
 	where post_id = ?`
 	err = db.Get(post, sqlStr, idStr)

@@ -8,6 +8,7 @@ import (
 	"bluebell_backend/routers"
 	"bluebell_backend/settings"
 	"fmt"
+	"net/http"
 )
 
 // @title 论坛系统
@@ -50,6 +51,7 @@ func main() {
 	}
 	// 注册路由
 	r := routers.SetupRouter()
+	r.StaticFS("/image", http.Dir("./image"))
 	err := r.Run(fmt.Sprintf(":%d", settings.Conf.Port))
 	if err != nil {
 		fmt.Printf("run server failed, err:%v\n", err)

@@ -15,7 +15,7 @@ import (
 const (
 	OneYearInSeconds         = 365 * 7 * 24 * 3600
 	VoteScore        float64 = 432 //  86400/200=432
-	PostPerAge               = 20
+	PostPerAge               = 4
 )
 
 var db *sqlx.DB
@@ -107,7 +107,7 @@ func PostVote(postID, userID string, v float64) (err error) {
 }
 
 // CreatePost 使用hash存储帖子信息
-func CreatePost(postID, userID, title, summary, communityName string) (err error) {
+func CreatePost(postID, userID, title, summary, communityName, fileList string, timeNow time.Time) (err error) {
 	now := float64(time.Now().Unix())
 	votedKey := KeyPostVotedZSetPrefix + postID
 	communityKey := KeyCommunityPostSetPrefix + communityName
@@ -120,6 +120,8 @@ func CreatePost(postID, userID, title, summary, communityName string) (err error
 		"votes":     1,
 		"comments":  0,
 		"community": communityName,
+		"fileList":  fileList,
+		"CreatTime": timeNow,
 	}
 
 	// 事务操作
@@ -144,8 +146,14 @@ func CreatePost(postID, userID, title, summary, communityName string) (err error
 	return
 }
 
-// GetPost 从key中分页取出帖子(一页PostPerAge 20 个帖子)
-func GetPost(order string, page int64) []map[string]string {
+type PostStruct struct {
+	PostList []map[string]string `json:"postList"`
+	Sum      int64               `json:"sum"`
+}
+
+// GetPost 从key中分页取出帖子(一页PostPerAge 4 个帖子)
+func GetPost(order string, page int64) PostStruct {
+	var PostDataList PostStruct
 	key := KeyPostScoreZSet
 	if order == "time" {
 		key = KeyPostTimeZSet
@@ -160,7 +168,11 @@ func GetPost(order string, page int64) []map[string]string {
 		//authorId := client.HMGet(KeyPostInfoHashPrefix+id, "user:id")
 		postList = append(postList, postData)
 	}
-	return postList
+	PostDataList.PostList = postList
+	PostDataList.Sum = client.ZCard(KeyPostScoreZSet).Val()
+	//m := make(map[string]string)
+	//m["sum"] = strconv.FormatInt(client.ZCard(KeyPostScoreZSet).Val(), 10)
+	return PostDataList
 }
 
 func GetPostBYKeys(keys []string) []map[string]string {

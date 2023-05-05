@@ -65,7 +65,7 @@
         <el-pagination
             background
             layout="prev, pager, next"
-            :total="1000"
+            :total="this.sum"
             @prev-click="prevClick"
             @next-click="nextClick"
             :current-page="this.page"
@@ -145,6 +145,7 @@ export default {
       order: "time",
       page: 1,
       postList: [],
+      sum: 10,
     };
   },
   methods: {
