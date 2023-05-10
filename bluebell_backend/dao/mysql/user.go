@@ -6,6 +6,7 @@ import (
 	"crypto/md5"
 	"database/sql"
 	"encoding/hex"
+	"strings"
 )
 
 const secret = "liwenzhou.com"
@@ -73,4 +74,68 @@ func GetAllUser() []string {
 	sqlStr := `select user_id from user`
 	db.Select(&userId, sqlStr)
 	return userId
+}
+
+func GetCollectList(userId uint64) []string {
+	var collectList string
+	sqlStr := `select collect from user where user_id = ?`
+	db.Get(&collectList, sqlStr, userId)
+	split := strings.Split(collectList, ";")
+	split = append(split[:0], split[1:]...)
+	return split
+}
+
+func GetConcernList(userId uint64) []string {
+	var concernList string
+	sqlStr := `select concern from user where user_id = ?`
+	db.Get(&concernList, sqlStr, userId)
+	split := strings.Split(concernList, ";")
+	split = append(split[:0], split[1:]...)
+	return split
+}
+
+func Collect(postId string, userId uint64) (err error) {
+	var collectList string
+	sqlStr := `select collect from user where user_id = ?`
+	db.Get(&collectList, sqlStr, userId)
+	collectList = collectList + ";" + postId
+	sqlStr = `update user set collect = ? where user_id = ?`
+	_, err = db.Exec(sqlStr, collectList, userId)
+	return err
+}
+
+func CancelCollect(postId string, userId uint64) (err error) {
+	collectList := GetCollectList(userId)
+	var collectPostIdList string
+	for i := 0; i < len(collectList); i++ {
+		if collectList[i] != postId && collectList[i] != "" {
+			collectPostIdList = collectPostIdList + ";" + collectList[i]
+		}
+	}
+	sqlStr := `update user set collect = ? where user_id = ?`
+	_, err = db.Exec(sqlStr, collectPostIdList, userId)
+	return err
+}
+
+func Concern(concernUserid string, userId uint64) (err error) {
+	var concernList string
+	sqlStr := `select concern from user where user_id = ?`
+	db.Get(&concernList, sqlStr, userId)
+	concernList = concernList + ";" + concernUserid
+	sqlStr = `update user set concern = ? where user_id = ?`
+	_, err = db.Exec(sqlStr, concernList, userId)
+	return
+}
+
+func CancelConcern(concernUserid string, userId uint64) (err error) {
+	concernList := GetConcernList(userId)
+	var concernUserIdList string
+	for i := 0; i < len(concernList); i++ {
+		if concernList[i] != concernUserid && concernList[i] != "" {
+			concernUserIdList = concernUserIdList + ";" + concernList[i]
+		}
+	}
+	sqlStr := `update user set concern = ? where user_id =?`
+	_, err = db.Exec(sqlStr, concernUserIdList, userId)
+	return
 }

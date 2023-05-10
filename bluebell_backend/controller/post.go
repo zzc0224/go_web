@@ -7,6 +7,7 @@ import (
 	"bluebell_backend/models"
 	"fmt"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -58,26 +59,36 @@ func PostListHandler(c *gin.Context) {
 }
 
 func GetPostListBYUser(c *gin.Context) {
+	page, _ := c.GetQuery("page")
 	id, _ := GetCurrentUserID(c)
 	postIDList := mysql.GetPostByUser(id)
 	keys := make([]string, 0)
-	for _, s := range postIDList {
-		keys = append(keys, strconv.FormatUint(s, 10))
+	//for _, s := range postIDList {
+	//	keys = append(keys, strconv.FormatUint(s, 10))
+	//}
+	for i := len(postIDList) - 1; i >= 0; i-- {
+		keys = append(keys, strconv.FormatUint(postIDList[i], 10))
 	}
-	postList := redis.GetPostBYKeys(keys)
+	pageNum, _ := strconv.ParseInt(page, 10, 64)
+	postList := redis.GetPostBYKeys(keys, pageNum)
 	ResponseSuccess(c, postList)
 }
 
 func GetOtherUserPost(c *gin.Context) {
+	page, _ := c.GetQuery("page")
 	id := c.Param("id")
 	atom, _ := strconv.Atoi(id)
 	u := uint64(atom)
 	postIDList := mysql.GetPostByUser(u)
 	keys := make([]string, 0)
-	for _, s := range postIDList {
-		keys = append(keys, strconv.FormatUint(s, 10))
+	//for _, s := range postIDList {
+	//	keys = append(keys, strconv.FormatUint(s, 10))
+	//}
+	for i := len(postIDList) - 1; i >= 0; i-- {
+		keys = append(keys, strconv.FormatUint(postIDList[i], 10))
 	}
-	postList := redis.GetPostBYKeys(keys)
+	pageNum, _ := strconv.ParseInt(page, 10, 64)
+	postList := redis.GetPostBYKeys(keys, pageNum)
 	ResponseSuccess(c, postList)
 }
 
@@ -93,8 +104,41 @@ func CommunityListHandler(c *gin.Context) {
 		pageNum = 1
 	}
 	posts := redis.GetCommunityPost(community, order, pageNum)
-	fmt.Println(len(posts))
 	ResponseSuccess(c, posts)
+}
+
+func CommunityRankHandler(c *gin.Context) {
+	communityList, _ := mysql.GetCommunityList()
+	communityRank := make([]models.CommunityRankStruct, 0)
+	var communityStruct models.CommunityRankStruct
+	//for i := 0; i < len(communityList); i++ {
+	//	communityRank[i].Community = communityList[i]
+	//	communityRank[i].Rank = redis.GetCommunityNum(communityList[i].Name)
+	//}
+	for _, community := range communityList {
+		communityStruct.Community = community
+		communityStruct.Num = redis.GetCommunityNum(community.Name)
+		communityRank = append(communityRank, communityStruct)
+	}
+	sort.Slice(communityRank, func(i, j int) bool {
+		return communityRank[i].Num > communityRank[j].Num
+	})
+	ResponseSuccess(c, communityRank)
+}
+
+func CommunityRankToday(c *gin.Context) {
+	communityList, _ := mysql.GetCommunityList()
+	communityRank := make([]models.CommunityRankStruct, 0)
+	var communityStruct models.CommunityRankStruct
+	for _, community := range communityList {
+		communityStruct.Community = community
+		communityStruct.Num = redis.GetCommunityTodayNum(community.Name)
+		communityRank = append(communityRank, communityStruct)
+	}
+	sort.Slice(communityRank, func(i, j int) bool {
+		return communityRank[i].Num > communityRank[j].Num
+	})
+	ResponseSuccess(c, communityRank)
 }
 
 func PostList2Handler(c *gin.Context) {
@@ -133,6 +177,21 @@ func PostDetailHandler(c *gin.Context) {
 		zap.L().Error("logic.GetPost(postID) failed", zap.String("postId", postId), zap.Error(err))
 	}
 
+	userId, _ := GetCurrentUserID(c)
+	//查询收藏状态
+	collectList := mysql.GetCollectList(userId)
+	for _, collect := range collectList {
+		if collect == postId {
+			post.Direction = 1
+		}
+	}
+	//查询关注状态
+	concernList := mysql.GetConcernList(userId)
+	for _, concern := range concernList {
+		if concern == strconv.FormatUint(post.AuthorId, 10) {
+			post.IsConcern = 1
+		}
+	}
 	ResponseSuccess(c, post)
 }
 

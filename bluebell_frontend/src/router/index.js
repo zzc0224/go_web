@@ -5,6 +5,10 @@ import Content from '../views/Content.vue'
 import Publish from '../views/Publish.vue'
 import Login from '../views/Login.vue'
 import SignUp from '../views/SignUp.vue'
+import User from '../views/User.vue'
+import OtherUser from "../views/OtherUser";
+import Search from "../views/Search";
+import Community from "@/views/Community";
 const originalPush = VueRouter.prototype.push;
 VueRouter.prototype.push = function push(location) {
   return originalPush.call(this, location).catch(err => err);
@@ -37,7 +41,27 @@ Vue.use(VueRouter)
     path: '/signup',
     name:"SignUp",
     component: SignUp
-  }
+  },
+  {
+    path:'/user',
+    name:"User",
+    component: User
+  },
+  {
+    path:'/otherUser/:userId',
+    name:"OtherUser",
+    component: OtherUser
+  },
+  {
+    path: '/search/:keywords',
+    name:"Search",
+    component: Search
+  },
+    {
+      path:`/community`,
+      name:"Community",
+      component: Community
+    }
 ]
 
 const router = new VueRouter({

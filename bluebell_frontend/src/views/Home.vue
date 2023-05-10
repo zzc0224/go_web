@@ -7,19 +7,19 @@
         :class="{ active: timeOrder }"
         @click="selectOrder('time')"
         >
-          <i class="iconfont icon-polygonred"></i>New
+          <i class="iconfont icon-polygonred"></i>最新
         </div>
         <div class="top btn-iconfont"
          :class="{ active: scoreOrder }"
          @click="selectOrder('score')"
         >
-          <i class="iconfont icon-top"></i>Score
+          <i class="iconfont icon-top"></i>分数
         </div>
         <div class="recommend btn-iconfont"
              :class="{ active: recommendOrder }"
              @click="selectOrder('recommend')"
         >
-          <i class="iconfont icon-top"></i>ReCommend
+          <i class="iconfont icon-top"></i>推荐
         </div>
 
         <button class="btn-publish" @click="goPublish">发表</button>
@@ -77,57 +77,27 @@
     <div class="right">
       <div class="communities">
         <h2 class="r-c-title">今日火热频道排行榜</h2>
-        <ul class="r-c-content">
-          <li class="r-c-item">
-            <span class="index">1</span>
+        <ul class="r-c-content" v-for="communityToday in communityTodayList.slice(0,3)" :key="communityToday.id"  style="overflow:auto">
+          <li class="r-c-item"  @click="goCommunity(communityToday.name)">
+            <span class="index"></span>
             <i class="icon"></i>
-            b/coding
-          </li>
-          <li class="r-c-item">
-            <span class="index">2</span>
-            <i class="icon"></i>
-            b/tree_hole
-          </li>
-          <li class="r-c-item">
-            <span class="index">3</span>
-            <i class="icon"></i>
-            b/job
+            {{ communityToday.name }}
+            <p class="info-num">{{ communityToday.num }} members</p>
           </li>
         </ul>
-        <button class="view-all">查看所有</button>
       </div>
       <div class="r-trending">
         <h2 class="r-t-title">持续热门频道</h2>
-        <ul class="rank">
+        <ul class="rank" v-for="community in communityList.slice(0,3)" :key="community.id" >
           <li class="r-t-cell">
             <div class="r-t-cell-info">
               <div class="avatar"></div>
               <div class="info">
-                <span class="info-title">b/Book</span>
-                <p class="info-num">7.1k members</p>
+                <span class="info-title">{{ community.name }}</span>
+                <p class="info-num">{{ community.num }} members</p>
               </div>
             </div>
-            <button class="join-btn">JOIN</button>
-          </li>
-          <li class="r-t-cell">
-            <div class="r-t-cell-info">
-              <div class="avatar"></div>
-              <div class="info">
-                <span class="info-title">b/coding</span>
-                <p class="info-num">3.2k members</p>
-              </div>
-            </div>
-            <button class="join-btn">JOIN</button>
-          </li>
-          <li class="r-t-cell">
-            <div class="r-t-cell-info">
-              <div class="avatar"></div>
-              <div class="info">
-                <span class="info-title">b/job</span>
-                <p class="info-num">2.5k members</p>
-              </div>
-            </div>
-            <button class="join-btn">JOIN</button>
+            <button @click="goCommunity(community.name)" class="join-btn">进入社区</button>
           </li>
         </ul>
       </div>
@@ -147,6 +117,8 @@ export default {
       page: 1,
       postList: [],
       sum: 0,
+      communityList: [],
+      communityTodayList: [],
     };
   },
   methods: {
@@ -172,6 +144,45 @@ export default {
     goDetail(id){
       this.$router.push({ name: "Content", params: { id: id }});
     },
+    goCommunity(name){
+      this.$router.push({name: "Community", params: { name: name}});
+    },
+    getCommunityTodayList(){
+      this.$axios({
+        method: "get",
+        url: "/communityRankToday",
+      })
+          .then(response => {
+            console.log(response.data, 222);
+            if (response.code == 1000) {
+              this.communityTodayList = response.data;
+              console.log(this.communityTodayList)
+            } else {
+              console.log(response.msg);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+    getCommunityRank() {
+      this.$axios({
+        method: "get",
+        url: "/communityRank",
+      })
+          .then(response => {
+            console.log(response.data, 222);
+            if (response.code == 1000) {
+              this.communityList = response.data;
+              console.log(this.communityList)
+            } else {
+              console.log(response.msg);
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
     getPostList() {
       this.$axios({
         method: "get",
@@ -195,24 +206,6 @@ export default {
         .catch(error => {
           console.log(error);
         });
-    },
-    getReCommendList() {
-      this.order = "recommend"
-      this.$axios({
-        method: "get",
-        url: "/recommend",
-      })
-          .then(response => {
-            console.log(response.data, 222);
-            if (response.code == 1000) {
-              this.postList = response.data.postList;
-            } else {
-              console.log(response.msg);
-            }
-          })
-          .catch(error => {
-            console.log(error);
-          });
     },
     vote(post_id, direction){
       this.$axios({
@@ -238,6 +231,8 @@ export default {
   },
   mounted: function() {
     this.getPostList();
+    this.getCommunityRank();
+    this.getCommunityTodayList();
   },
   computed:{
     timeOrder(){
@@ -495,6 +490,12 @@ export default {
             background-size: cover;
             margin-right: 20px;
           }
+          .info-num {
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 16px;
+            padding-bottom: 4px;
+          }
           &:last-child {
             border-bottom: none;
           }
@@ -544,13 +545,13 @@ export default {
         padding: 0 12px 12px;
       }
       .rank {
-        padding: 12px;
+        padding: 8px;
         .r-t-cell {
           display: flex;
           display: -webkit-flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 16px;
+          margin-bottom: 5px;
           .r-t-cell-info {
             display: flex;
           }

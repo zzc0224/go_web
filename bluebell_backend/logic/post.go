@@ -21,6 +21,9 @@ func CreatePost(post *models.Post) (err error) {
 	post.PostID = postID
 	// 创建帖子
 	//fmt.Printf("%v\n", post.CreateTime)
+	if post.FileList == "" { //前端json.parse()中不可传入空值
+		post.FileList = "[]"
+	}
 	if err := mysql.CreatePost(post); err != nil {
 		zap.L().Error("mysql.CreatePost(&post) failed", zap.Error(err))
 		return err
@@ -38,7 +41,7 @@ func CreatePost(post *models.Post) (err error) {
 		TruncateByWords(post.Content, 120),
 		community.Name,
 		post.FileList,
-		time.Now()); err != nil {
+		time.Now().Format("2006-01-02 15:04:05")); err != nil {
 		zap.L().Error("redis.CreatePost failed", zap.Error(err))
 		return err
 	}

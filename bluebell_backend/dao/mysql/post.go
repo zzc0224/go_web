@@ -71,9 +71,11 @@ func GetPostList(page, size int64) (posts []*models.ApiPostDetail, err error) {
 
 func GetPostBYOrder(order string) (postIDList []uint64) {
 	orderStr := "%" + order + "%"
-	sqlStr := `select post_id from post where content like ? or title like ?`
+	sqlStr := `select a.post_id from post as a,community as b,user as c 
+                 where ( a.content like ? or a.title like ? or b.community_name like ? or c.username like ? )
+                   and a.community_id=b.community_id and c.user_id = a.author_id`
 	postIDList = make([]uint64, 0)
-	db.Select(&postIDList, sqlStr, orderStr, orderStr)
+	db.Select(&postIDList, sqlStr, orderStr, orderStr, orderStr, orderStr)
 	return
 }
 

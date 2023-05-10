@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"strconv"
@@ -40,13 +41,13 @@ func ReCommend(c *gin.Context, recommendMap map[string]map[string]float64) []str
 	}
 	var reCommendIdList []reCommendIdListStruct
 	var reCommendKeyList []string
-	//println("test--------------------")
-	//for user, list := range recommendMap {
-	//	for post, vote := range list {
-	//		println(user, post, vote)
-	//	}
-	//}
-	//println("test--------------------")
+	println("test--------------------")
+	for user, list := range recommendMap {
+		for post, vote := range list {
+			println(user, post, vote)
+		}
+	}
+	println("test--------------------")
 
 	for CurrentPostId, CurrentVote := range recommendMap[CurrentUserID] {
 		//println(CurrentUserID, CurrentPostId, CurrentVote)
@@ -93,7 +94,7 @@ func ReCommend(c *gin.Context, recommendMap map[string]map[string]float64) []str
 				}
 			}
 			VoteStructArr = nil
-			//fmt.Printf("%f\n", CurrentVoteMap[CurrentPostId])
+			fmt.Printf("%f\n", CurrentVoteMap[CurrentPostId])
 			type simStruct struct {
 				user   string
 				simNum float64
@@ -111,7 +112,7 @@ func ReCommend(c *gin.Context, recommendMap map[string]map[string]float64) []str
 				//当用户人数多于4人，找相似度最高的2人
 				CurrentVoteMap[CurrentPostId] = CurrentAve + (sim[CurrentUserID][simStructArr[0].user]*(recommendMap[simStructArr[0].user][CurrentPostId]-averageArr[simStructArr[0].user])+sim[CurrentUserID][simStructArr[1].user]*(recommendMap[simStructArr[1].user][CurrentPostId]-averageArr[simStructArr[1].user]))/(sim[CurrentUserID][simStructArr[0].user]+sim[CurrentUserID][simStructArr[1].user])
 			}
-			//fmt.Printf("last %v %v %f\n", simStructArr[0].user, CurrentPostId, CurrentVoteMap[CurrentPostId])
+			fmt.Printf("last %v %v %f\n", simStructArr[0].user, CurrentPostId, CurrentVoteMap[CurrentPostId])
 			reCommendIdList = append(reCommendIdList, reCommendIdListStruct{CurrentPostId, CurrentVoteMap[CurrentPostId]})
 		}
 	}

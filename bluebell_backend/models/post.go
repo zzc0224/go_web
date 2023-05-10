@@ -44,6 +44,8 @@ func (p *Post) UnmarshalJSON(data []byte) (err error) {
 
 type ApiPostDetail struct {
 	*Post
-	AuthorName    string `json:"author_name"`
-	CommunityName string `json:"community_name"`
+	AuthorName    string  `json:"author_name"`
+	CommunityName string  `json:"community_name"`
+	Direction     float64 `json:"direction"`
+	IsConcern     float64 `json:"is_concern"`
 }

@@ -15,39 +15,53 @@
           <h4 class="con-title">{{post.title}}</h4>
           <div>{{post.community_name}}</div>
           <div class="con-info">{{post.content}}</div>
-          <li v-for="file in fileList" :key="file.uid">
-            <div>{{file.url}}</div>
-            <img :src="file.url">
-          </li>
+          <div class="imgBox">
+            <div class="block" v-for="file in fileList" :key="file.id">
+              <el-image
+                  class="img"
+                  :src="file.url"
+                  fit="fill"></el-image>
+            </div>
+          </div>
+          <i v-if="direction == 0" class="el-icon-star-off" @click="Collect(post.post_id)"></i>
+          <i v-else-if="direction == 1" class="el-icon-star-on" @click="Collect(post.post_id)"></i>
           <div class="user-btn">
             <span class="btn-item">
-              <i class="iconfont icon-comment"></i>comment
+              <i class="iconfont icon-comment"></i>评论
             </span>
           </div>
           <br>
           <div>
-            <li v-for="commentList in comment" :key="commentList.comment_id">
-              <div>{{commentList.author_name}}</div>
-              <div>{{commentList.content}}</div>
-
-            </li>
-          </div>
-          <div class="post-sub-container">
-            <!---此处放置富文本--->
-            <div class="post-text-con">
-            <textarea
-                class="post-content-t"
-                id
-                cols="30"
-                rows="10"
-                v-model="content"
-                placeholder="内容"
-            ></textarea>
+            <div class="post-sub-container">
+              <!---此处放置富文本--->
+              <div class="post-text-con">
+                <el-input
+                    type="textarea"
+                    :autosize="{ minRows: 2, maxRows: 4}"
+                    placeholder="请输入内容"
+                    v-model="content">
+                </el-input>
+              </div>
             </div>
-          </div>
-          <div class="post-footer">
-            <div class="btns">
-              <button class="btn" @click="SubmitComment()">发表</button>
+            <div class="post-footer">
+              <div class="btns">
+                <button class="btn" @click="SubmitComment()">发表</button>
+              </div>
+            </div>
+            <el-divider></el-divider>
+            <div class="commentContainer">
+              <div class="commentBox" v-for="c in comment" :key="c.comment_id">
+                <div class="leftBox" @click="goOtherUser(c.author_id)">
+                  <el-image
+                      class="avatar"
+                      src="https://yeasy-helpj.oss-cn-hangzhou.aliyuncs.com/posts/20230505145036146.png"
+                      fit="fill"></el-image>
+                  <div class="author">{{c.author_name}}</div>
+                </div>
+                <div class="rightBox">
+                  <div class="comment">{{c.content}}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -76,7 +90,7 @@
     <div class="right">
       <div class="topic-info">
         <h5 class="t-header"></h5>
-        <div class="t-info">
+        <div class="t-info" @click="goOtherUser(post.author_id)">
           <a class="avatar"></a>
           <span class="topic-name">b/{{post.author_name}}</span>
         </div>
@@ -92,7 +106,8 @@
           </li>
         </ul>
         <div class="date">Created Apr 10, 2008</div>
-        <button class="topic-btn">JOIN</button>
+        <button v-if="is_concern == 0" class="topic-btn" @click="Concern(post.author_id)">关注</button>
+        <button v-else-if="is_concern == 1" class="topic-btn" @click="Concern(post.author_id)">取消关注</button>
       </div>
     </div>
   </div>
@@ -104,12 +119,65 @@ export default {
   data(){
     return {
       post:{},
-      comment:{},
+      comment: [],
       content:"",
-      fileList:{}
+      fileList:[],
+      direction: 0,
+      is_concern: 0,
     }
   },
   methods:{
+    Concern(author_id){
+      if(this.is_concern == 0){
+        this.is_concern = 1
+      }else {
+        this.is_concern = 0
+      }
+      this.$axios({
+        method:"post",
+        url:"/concern",
+        data:JSON.stringify({
+          author_id:author_id,
+          is_concern:parseFloat(this.is_concern),
+        })
+      }).then(response => {
+        if (response.code == 1000) {
+          console.log("concern success");
+        } else {
+          console.log(response.msg);
+        }
+      })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+    Collect(post_id){
+      if (this.direction == 0){
+        this.direction = 1
+      }else {
+        this.direction = 0
+      }
+      this.$axios({
+        method:"post",
+        url:"/collect",
+        data:JSON.stringify({
+          post_id:post_id,
+          direction:parseFloat(this.direction),
+        })
+      }).then(response => {
+        if (response.code == 1000) {
+          console.log("collect success");
+        } else {
+          console.log(response.msg);
+        }
+      })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+    goOtherUser(authorId){
+      this.$router.push({name:"OtherUser",params: { userId: authorId }})
+    },
     getPostDetail() {
       this.$axios({
         method: "get",
@@ -120,6 +188,8 @@ export default {
           if (response.code == 1000) {
             this.post = response.data;
             this.fileList = JSON.parse(this.post.fileList)
+            this.direction = response.data.direction
+            this.is_concern = response.data.is_concern
             console.log(this.fileList)
           } else {
             console.log(response.msg);
@@ -227,6 +297,16 @@ export default {
       .l-container {
         padding: 15px;
         margin-left: 40px;
+        .imgBox {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-start;
+          .img {
+            width: 200px;
+            height: 150px;
+            margin-right: 10px;
+          }
+        }
         .con-title {
           color: #000000;
           font-size: 18px;
@@ -253,6 +333,7 @@ export default {
           font-size: 12px;
           display: flex;
           display: -webkit-flex;
+          margin-top: 50px;
           .btn-item {
             display: flex;
             display: -webkit-flex;
@@ -416,28 +497,7 @@ export default {
   }
 .post-sub-container {
   padding: 16px;
-.post-text-con {
-  width: 100%;
-  height: 200px;
-  border: 1px solid #edeff1;
-  margin-top: 20px;
-.post-content-t {
-  resize: none;
-  box-sizing: border-box;
-  overflow: hidden;
-  display: block;
-  width: 100%;
-  height: 200px;
-  padding: 12px 8px;
-  outline: none;
-  border: 1px solid #edeff1;
-  border-radius: 4px;
-  color: #1c1c1c;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 21px;
-}
-}
+
 }
 .post-footer {
   display: flex;
@@ -463,6 +523,35 @@ export default {
   cursor: pointer;
 }
 }
+}
+.commentContainer {
+  .commentBox {
+    display: flex;
+    vertical-align: middle;
+  margin-bottom: 10px;
+    .leftBox {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+      }
+    }
+    .rightBox {
+      flex: 10;
+      display: flex;
+      align-items: center;
+
+      padding: 0;
+      .comment {
+        vertical-align: middle;
+        padding: 0;
+        display: inline-block;
+      }
+    }
+  }
 }
 }
 </style>

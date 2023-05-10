@@ -109,7 +109,7 @@ export default {
         data: JSON.stringify({
           title: this.title,
           content: this.content,
-          community_id: this.selectCommunity.id,
+          community_id: parseInt(this.selectCommunity.id),
           fileList: JSON.stringify(this.fileList)
         })
       })

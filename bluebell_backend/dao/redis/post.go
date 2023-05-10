@@ -17,6 +17,7 @@ import (
 
 const (
 	OneYearInSeconds         = 365 * 7 * 24 * 3600
+	OneDayInSeconds          = 24 * 3600
 	VoteScore        float64 = 432 //  86400/200=432
 	PostPerAge               = 4
 )
@@ -110,7 +111,7 @@ func PostVote(postID, userID string, v float64) (err error) {
 }
 
 // CreatePost 使用hash存储帖子信息
-func CreatePost(postID, userID, title, summary, communityName, fileList string, timeNow time.Time) (err error) {
+func CreatePost(postID, userID, title, summary, communityName, fileList string, timeNow string) (err error) {
 	now := float64(time.Now().Unix())
 	votedKey := KeyPostVotedZSetPrefix + postID
 	communityKey := KeyCommunityPostSetPrefix + communityName
@@ -174,7 +175,7 @@ func GetPost(order string, page int64, c *gin.Context) PostStruct {
 		recommendMap := GetVote()
 		reCommendKeyList := pkg.ReCommend(c, recommendMap)
 		PostDataList.Sum = int64(len(reCommendKeyList))
-		println("start:", start, "   end:", end)
+		//println("start:", start, "   end:", end)
 		for i := start; i <= end; i++ {
 			if i < PostDataList.Sum {
 				ids = append(ids, reCommendKeyList[i])
@@ -196,15 +197,29 @@ func GetPost(order string, page int64, c *gin.Context) PostStruct {
 	return PostDataList
 }
 
-func GetPostBYKeys(keys []string) []map[string]string {
+func GetPostBYKeys(keys []string, page int64) PostStruct {
+	var PostDataList PostStruct
+	PostDataList.Sum = int64(len(keys))
 	recommendList := make([]map[string]string, 0)
-	for _, key := range keys {
+	ids := make([]string, 0)
+	start := (page - 1) * PostPerAge
+	end := start + PostPerAge - 1
+	//println("start:", start, "   end:", end)
+	for i := start; i <= end; i++ {
+		if i < PostDataList.Sum {
+			ids = append(ids, keys[i])
+		} else {
+			break
+		}
+	}
+	for _, key := range ids {
 		recommend := client.HGetAll(KeyPostInfoHashPrefix + key).Val()
 		recommend["id"] = key
 		//authorId := client.HMGet(KeyPostInfoHashPrefix+key, "user:id")
 		recommendList = append(recommendList, recommend)
 	}
-	return recommendList
+	PostDataList.PostList = recommendList
+	return PostDataList
 }
 
 func GetVote() map[string]map[string]float64 {
@@ -241,9 +256,9 @@ func GetVote() map[string]map[string]float64 {
 }
 
 // GetCommunityPost 分社区根据发帖时间或者分数取出分页的帖子
-func GetCommunityPost(communityName, orderKey string, page int64) []map[string]string {
+func GetCommunityPost(communityName, orderKey string, page int64) PostStruct {
 	key := orderKey + communityName // 创建缓存键
-
+	var PostDataList PostStruct
 	if client.Exists(key).Val() < 1 {
 		client.ZInterStore(key, redis.ZStore{
 			Aggregate: "MAX",
@@ -259,9 +274,31 @@ func GetCommunityPost(communityName, orderKey string, page int64) []map[string]s
 		postData["id"] = id
 		postList = append(postList, postData)
 	}
-	return postList
+	PostDataList.PostList = postList
+	PostDataList.Sum = int64(GetCommunityNum(communityName))
+	return PostDataList
 
 	//return GetPost(key, page)
+}
+
+func GetCommunityNum(CommunityName string) (num uint64) {
+	key := KeyCommunityPostSetPrefix + CommunityName
+	num = uint64(client.SCard(key).Val())
+	return
+}
+
+func GetCommunityTodayNum(CommunityName string) (num uint64) {
+	key := KeyCommunityPostSetPrefix + CommunityName
+	num = uint64(client.SCard(key).Val())
+	List := client.SMembers(key).Val()
+	for _, postID := range List {
+		postTime := client.ZScore(KeyPostTimeZSet, postID).Val()
+		if float64(time.Now().Unix())-postTime > OneDayInSeconds {
+			// 发帖时间超过一天
+			num--
+		}
+	}
+	return
 }
 
 // Reddit Hot rank algorithms

@@ -3,8 +3,9 @@
       <span class="logo" @click="goIndex">bluebell</span>
     <div class="search">
       <label class="s-logo"></label>
-      <input type="text" class="s-input" placeholder="搜索" />
+      <input type="text" class="s-input" v-model="keywords" name="search" id="search" placeholder="搜索" />
     </div>
+    <button type="button" @click="goSearch(keywords)">提交</button>
     <div class="btns">
       <div v-show="!isLogin">
         <a class="login-btn" @click="goLogin">登录</a>
@@ -14,6 +15,7 @@
         <span class="user">{{ user.username }}</span>
         <div class="dropdown-content">
           <a @click="goLogout">登出</a>
+          <a @click="goUser">个人主页</a>
         </div>
       </div>
     </div>
@@ -38,9 +40,15 @@ export default {
   data(){
     return{
       user:[],
+      keywords: "",
+      postList: [],
+      page:1,
     };
   },
   methods: {
+    goSearch(keywords){
+      this.$router.push({name:"Search",params:{keywords:keywords}})
+    },
     goIndex(){
       this.$router.push({ name: "Home" });
     },
@@ -52,6 +60,9 @@ export default {
     },
     goLogout(){
       this.$store.commit("logout");
+    },
+    goUser(){
+      this.$router.push({ name: "User" });
     },
     getUserName(){
       this.$axios({
