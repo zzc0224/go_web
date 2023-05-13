@@ -65,6 +65,11 @@ func SetupRouter() *gin.Engine {
 		v1.POST("/concern", controller.ConcernHandler) //关注
 		v1.GET("/concern", controller.ConcernListHandler)
 
+		v1.POST("/warn", controller.WarnHandler) //举报
+		v1.GET("/warn", controller.WarnListHandler)
+		v1.POST("/adminWarn", controller.AdminWarn)
+		v1.POST("/adminUser", controller.AdminUser)
+
 		v1.GET("/ping", func(c *gin.Context) {
 			c.String(http.StatusOK, "pong test")
 		})

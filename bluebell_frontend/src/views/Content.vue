@@ -15,16 +15,26 @@
           <h4 class="con-title">{{post.title}}</h4>
           <div>{{post.community_name}}</div>
           <div class="con-info">{{post.content}}</div>
-          <div class="imgBox">
-            <div class="block" v-for="file in fileList" :key="file.id">
-              <el-image
-                  class="img"
-                  :src="file.url"
-                  fit="fill"></el-image>
+          <div class="box">
+            <div class="imgBox">
+              <div class="block" v-for="file in fileList" :key="file.id">
+                <el-image
+                    class="img"
+                    :src="file.url"
+                    fit="fill"></el-image>
+              </div>
+            </div>
+
+            <div class="bottomBox">
+              <div class="leftArea">
+                <i v-if="direction == 0" class="el-icon-star-off" @click="Collect(post.post_id)"></i>
+                <i v-else-if="direction == 1" class="el-icon-star-on" @click="Collect(post.post_id)"></i>
+              </div>
+              <div class="rightArea"  @click="Warn(post.author_id,post.post_id,'2')">
+                <i class="el-icon-warning"></i>
+              </div>
             </div>
           </div>
-          <i v-if="direction == 0" class="el-icon-star-off" @click="Collect(post.post_id)"></i>
-          <i v-else-if="direction == 1" class="el-icon-star-on" @click="Collect(post.post_id)"></i>
           <div class="user-btn">
             <span class="btn-item">
               <i class="iconfont icon-comment"></i>评论
@@ -60,6 +70,9 @@
                 </div>
                 <div class="rightBox">
                   <div class="comment">{{c.content}}</div>
+                </div>
+                <div class="rightArea"  @click="Warn(c.author_id,c.comment_id,'1')">
+                  <i class="el-icon-warning"></i>
                 </div>
               </div>
             </div>
@@ -150,6 +163,32 @@ export default {
           .catch(error => {
             console.log(error);
           });
+    },
+    Warn(passive_user_id,comment_post_user_id,type){
+      this.$prompt('请输入举报理由', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+      }).then(({ value }) => {
+        this.$message({
+          type: 'success',
+          message: '举报成功 '
+        });
+        this.$axios({
+          method:"post",
+          url:"/warn",
+          data:JSON.stringify({
+            passive_user_id:passive_user_id,
+            comment_post_user_id:comment_post_user_id,
+            type:type,
+            reason:value,
+          })
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消输入'
+        });
+      });
     },
     Collect(post_id){
       if (this.direction == 0){
@@ -306,6 +345,17 @@ export default {
             height: 150px;
             margin-right: 10px;
           }
+        }
+        .bottomBox {
+          display: flex;
+          justify-content: space-between;
+          .rightArea  {
+            display: none;
+          }
+        }
+
+        .box:hover .rightArea {
+          display: block;
         }
         .con-title {
           color: #000000;

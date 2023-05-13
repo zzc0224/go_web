@@ -44,7 +44,7 @@ func Register(user *models.User) (err error) {
 
 func Login(user *models.User) (err error) {
 	originPassword := user.Password // 记录一下原始密码
-	sqlStr := "select user_id, username, password from user where username = ?"
+	sqlStr := "select user_id, username, password,status from user where username = ?"
 	err = db.Get(user, sqlStr, user.UserName)
 	if err != nil && err != sql.ErrNoRows {
 		// 查询数据库出错
@@ -58,6 +58,9 @@ func Login(user *models.User) (err error) {
 	password := encryptPassword([]byte(originPassword))
 	if user.Password != password {
 		return ErrorPasswordWrong
+	}
+	if user.Status != 0 {
+		return ErrorUserProhibit
 	}
 	return
 }

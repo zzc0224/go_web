@@ -52,3 +52,11 @@ func GetCommunityByID(idStr string) (community *models.CommunityDetail, err erro
 	}
 	return
 }
+
+func GetCommunityNameByPostID(postId uint64) string {
+	var communityName string
+	sqlStr := `select b.community_name from post as a,community as b 
+    where a.post_id = ? and a.community_id = b.community_id`
+	db.Get(&communityName, sqlStr, postId)
+	return communityName
+}

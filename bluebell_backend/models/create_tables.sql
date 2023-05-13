@@ -66,3 +66,18 @@ CREATE TABLE `comment` (
   UNIQUE KEY `idx_comment_id` (`comment_id`),
   KEY `idx_author_Id` (`author_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+DROP TABLE IF EXISTS `warn`;
+CREATE TABLE `warn` (
+                        `warning_id` bigint NOT NULL COMMENT '举报id',
+                        `positive_user_id` bigint NOT NULL COMMENT '发起举报的用户id',
+                        `passive_user_id` bigint NOT NULL COMMENT '被举报的用户id',
+                        `comment_post_user_id` bigint NOT NULL COMMENT '评论或帖子或用户的id',
+                        `type` varchar(255) NOT NULL COMMENT '区分评论或帖子或用户',
+                        `status` varchar(0) DEFAULT NULL COMMENT '举报处理状态',
+                        `positive_result` varchar(2048) DEFAULT NULL COMMENT '发送给举报人的结果',
+                        `passive_result` varchar(2048) DEFAULT NULL COMMENT '发送给被举报人的结果',
+                        `create_time` timestamp NULL DEFAULT NULL COMMENT '创建时间',
+                        PRIMARY KEY (`warning_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

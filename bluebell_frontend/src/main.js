@@ -3,7 +3,19 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import axios from './service/api'
-import {Upload, Button, Pagination, Avatar, Image, Input, Divider,Icon,InfiniteScroll} from "element-ui"
+import {
+  Upload,
+  Button,
+  Pagination,
+  Avatar,
+  Image,
+  Input,
+  Divider,
+  Icon,
+  InfiniteScroll,
+  MessageBox,
+  Message
+} from "element-ui"
 
 Vue.prototype.$axios = axios;
 Vue.config.productionTip = false
@@ -16,6 +28,15 @@ Vue.use(Input)
 Vue.use(Divider)
 Vue.use(Icon)
 Vue.use(InfiniteScroll)
+Vue.component(MessageBox.name, MessageBox)
+Vue.component(Message.name, Message)
+
+
+Vue.prototype.$msgbox = MessageBox;
+Vue.prototype.$alert = MessageBox.alert;
+Vue.prototype.$confirm = MessageBox.confirm;
+Vue.prototype.$prompt = MessageBox.prompt;
+Vue.prototype.$message = Message;
 
 router.beforeEach((to, from, next) => {
   console.log(to);
